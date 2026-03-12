@@ -17,6 +17,7 @@ import {
 import { cn } from '@/src/utils/cn';
 import { PremiumButton } from '../premium/PremiumButton';
 import { CodePanel } from '../code-preview/CodePanel';
+import { useToast } from '../premium/PremiumToast';
 
 // --- Specialized Animation Components ---
 
@@ -56,13 +57,14 @@ function MagneticCard({ children, title, description, icon: Icon, color }: any) 
 // 2. Scroll: Parallax Reveal
 function ScrollRevealSection({ index, title, description, scrollYProgress }: any) {
   const yParallax = useTransform(scrollYProgress, [0, 1], [0, index % 2 === 0 ? -100 : 100]);
+  const { addToast } = useToast();
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50, scale: 0.95 }}
+      initial={{ opacity: 0, y: 100, scale: 0.8 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: false, amount: 0.3 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
         "flex flex-col md:flex-row gap-12 items-center py-20 relative",
         index % 2 === 0 && "md:flex-row-reverse"
@@ -75,7 +77,7 @@ function ScrollRevealSection({ index, title, description, scrollYProgress }: any
         <PremiumButton 
           variant="secondary" 
           icon={<ArrowRight size={16} />}
-          onClick={() => alert(`מנווט לפרטים נוספים על: ${title}`)}
+          onClick={() => addToast(`מנווט לפרטים נוספים על: ${title}`, 'זהו קישור לדוגמה', 'info')}
         >
           למידה נוספת
         </PremiumButton>
