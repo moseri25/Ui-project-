@@ -1,374 +1,257 @@
-import * as React from 'react';
-import { motion, AnimatePresence, useScroll, useSpring, useTransform } from 'framer-motion';
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, 
+  Search, 
+  Filter, 
   LayoutGrid, 
-  Layers, 
-  Maximize2, 
-  MousePointer2, 
-  ScrollText, 
-  Image as ImageIcon, 
+  List, 
+  Play, 
+  RefreshCw,
   Zap,
-  ArrowRight,
-  Type,
-  Move
+  MousePointer2,
+  Maximize2,
+  Activity,
+  MessageSquare
 } from 'lucide-react';
-import { cn } from '@/src/utils/cn';
-import { PremiumButton } from '../premium/PremiumButton';
+import { motionSystems, MotionSystem } from './AdvancedMotionData';
+import { CodePanel } from '../code-preview/CodePanel';
 
-// --- Specialized Animation Components ---
+export function AdvancedMotionLab() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedType, setSelectedType] = useState<MotionSystem['type'] | 'all'>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedSystem, setSelectedSystem] = useState<MotionSystem | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-// 1. Hover: Magnetic & Tilt
-function MagneticCard({ children, title, description, icon: Icon, color }: any) {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const [position, setPosition] = React.useState({ x: 0, y: 0 });
+  const filteredSystems = useMemo(() => {
+    return motionSystems.filter(system => {
+      const matchesSearch = system.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          system.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesType = selectedType === 'all' || system.type === selectedType;
+      return matchesSearch && matchesType;
+    });
+  }, [searchQuery, selectedType]);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!ref.current) return;
-    const { clientX, clientY } = e;
-    const { left, top, width, height } = ref.current.getBoundingClientRect();
-    const x = clientX - (left + width / 2);
-    const y = clientY - (top + height / 2);
-    setPosition({ x: x * 0.2, y: y * 0.2 });
+  const handleRefresh = () => setRefreshKey(prev => prev + 1);
+
+  const getTypeIcon = (type: MotionSystem['type']) => {
+    switch (type) {
+      case 'entrance': return <Zap size={14} />;
+      case 'hover': return <MousePointer2 size={14} />;
+      case 'layout': return <LayoutGrid size={14} />;
+      case 'continuous': return <Activity size={14} />;
+      case 'feedback': return <MessageSquare size={14} />;
+    }
+  };
+
+  const getTypeLabel = (type: MotionSystem['type']) => {
+    switch (type) {
+      case 'entrance': return 'כניסה';
+      case 'hover': return 'ריחוף';
+      case 'layout': return 'פריסה';
+      case 'continuous': return 'רציף';
+      case 'feedback': return 'משוב';
+    }
   };
 
   return (
-    <motion.div
-      ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => setPosition({ x: 0, y: 0 })}
-      animate={{ x: position.x, y: position.y }}
-      whileHover={{ rotateX: 5, rotateY: 5, scale: 1.02 }}
-      className="relative p-8 rounded-3xl bg-card border border-border/50 shadow-xl cursor-pointer group overflow-hidden"
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-      <div className={cn("w-12 h-12 rounded-2xl mb-4 flex items-center justify-center", color)}>
-        <Icon size={24} />
-      </div>
-      <h3 className="text-xl font-bold mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </motion.div>
-  );
-}
-
-// 2. Scroll: Parallax Reveal
-function ScrollRevealSection({ index, title, description, scrollYProgress }: any) {
-  const yParallax = useTransform(scrollYProgress, [0, 1], [0, index % 2 === 0 ? -100 : 100]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 100 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }}
-      className={cn(
-        "flex flex-col md:flex-row gap-12 items-center py-20 relative",
-        index % 2 === 0 && "md:flex-row-reverse"
-      )}
-    >
-      <div className="flex-1 space-y-6 relative z-10">
-        <div className="text-7xl font-black text-primary/10">0{index}</div>
-        <h3 className="text-4xl font-bold tracking-tighter">{title}</h3>
-        <p className="text-lg text-muted-foreground leading-relaxed">{description}</p>
-        <PremiumButton variant="secondary" icon={<ArrowRight size={16} />}>למידה נוספת</PremiumButton>
-      </div>
-      
-      <div className="flex-1 w-full aspect-video rounded-[2.5rem] bg-muted/30 border border-border/50 relative overflow-hidden group z-10">
-        <motion.div
-          style={{ y: yParallax }}
-          whileHover={{ scale: 1.1 }}
-          transition={{ duration: 1.5 }}
-          className="absolute inset-0 bg-gradient-to-br from-primary/20 to-violet-500/20"
-        />
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="px-6 py-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold">
-            View Project
-          </div>
-        </div>
-      </div>
-
-      {/* Floating Section-Specific Decoration */}
-      <motion.div 
-        style={{ y: useTransform(scrollYProgress, [0, 1], [0, index * 50]) }}
-        className="absolute -top-10 -right-10 opacity-20 text-primary pointer-events-none"
-      >
-        <Sparkles size={120} />
-      </motion.div>
-    </motion.div>
-  );
-}
-
-// 3. Background: Live Mesh with Parallax
-function LiveBackground({ scrollYProgress }: { scrollYProgress: any }) {
-  const y1 = useTransform(scrollYProgress, [0, 1], [0, -200]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const rotate1 = useTransform(scrollYProgress, [0, 1], [0, 45]);
-  const rotate2 = useTransform(scrollYProgress, [0, 1], [0, -45]);
-  const scale1 = useTransform(scrollYProgress, [0, 0.5, 1], [1, 1.2, 1]);
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10 opacity-50">
-      {/* Primary Blob */}
-      <motion.div
-        style={{ y: y1, rotate: rotate1, scale: scale1 }}
-        animate={{
-          x: [0, 50, 0],
-        }}
-        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-        className="absolute top-0 left-0 w-[600px] h-[600px] bg-primary/20 blur-[120px] rounded-full"
-      />
-      
-      {/* Secondary Blob */}
-      <motion.div
-        style={{ y: y2, rotate: rotate2 }}
-        animate={{
-          x: [0, -50, 0],
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-violet-500/20 blur-[120px] rounded-full"
-      />
-
-      {/* Floating Decorative Elements */}
-      <motion.div 
-        style={{ y: useTransform(scrollYProgress, [0, 1], [0, -400]) }}
-        className="absolute top-1/4 right-10 w-24 h-24 border-2 border-primary/20 rounded-full blur-sm"
-      />
-      <motion.div 
-        style={{ y: useTransform(scrollYProgress, [0, 1], [0, 300]), rotate: 120 }}
-        className="absolute top-3/4 left-20 w-32 h-32 border-2 border-violet-500/20 rounded-3xl blur-sm"
-      />
-      <motion.div 
-        style={{ y: useTransform(scrollYProgress, [0, 1], [0, -150]) }}
-        className="absolute top-1/2 left-1/4 w-16 h-16 bg-emerald-500/10 rounded-full blur-md"
-      />
-    </div>
-  );
-}
-
-export function AdvancedMotionLab() {
-  const [selectedId, setSelectedId] = React.useState<string | null>(null);
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
-
-  const galleryItems = [
-    { id: '1', title: 'עיצוב ממשק', subtitle: 'חוויית משתמש', color: 'bg-blue-500/10 text-blue-500' },
-    { id: '2', title: 'פיתוח קצה', subtitle: 'ביצועים גבוהים', color: 'bg-purple-500/10 text-purple-500' },
-    { id: '3', title: 'בינה מלאכותית', subtitle: 'אוטומציה חכמה', color: 'bg-emerald-500/10 text-emerald-500' },
-  ];
-
-  return (
-    <div className="relative space-y-32">
-      {/* Scroll Progress */}
-      <motion.div className="fixed top-0 left-0 right-0 h-1.5 bg-primary z-[100] origin-left" style={{ scaleX }} />
-      
-      <LiveBackground scrollYProgress={scrollYProgress} />
-
-      {/* Floating Background Text */}
-      <motion.div
-        style={{ x: useTransform(scrollYProgress, [0, 1], [-100, 100]), opacity: 0.05 }}
-        className="absolute top-40 left-0 text-[20vw] font-black pointer-events-none select-none whitespace-nowrap"
-      >
-        MOTION DESIGN
-      </motion.div>
-
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col items-center text-center space-y-6 max-w-3xl mx-auto pt-12">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="p-3 rounded-2xl bg-primary/10 text-primary"
-        >
-          <Sparkles size={32} />
-        </motion.div>
-        <h2 className="text-5xl font-black tracking-tighter sm:text-7xl">
-          מעבדת <span className="text-primary">תנועה</span> מתקדמת
-        </h2>
-        <p className="text-xl text-muted-foreground leading-relaxed">
-          כל סוגי האנימציות, האפקטים והתנהגויות ה-UI במקום אחד. חוויה שמרגישה חיה, מגיבה ומקצועית.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+            <Sparkles size={24} />
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">מערכות תנועה מתקדמות</h2>
+            <p className="text-muted-foreground">100 וריאציות של תנועה חכמה לממשקי פרימיום.</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={handleRefresh}
+            className="p-2 rounded-xl bg-muted hover:bg-muted/80 text-muted-foreground transition-colors"
+            title="רענן אנימציות"
+          >
+            <RefreshCw size={20} />
+          </button>
+          <div className="flex bg-muted p-1 rounded-xl">
+            <button 
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground'}`}
+            >
+              <LayoutGrid size={18} />
+            </button>
+            <button 
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground'}`}
+            >
+              <List size={18} />
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* 1. Hover & Interaction Section */}
-      <section className="space-y-12">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-violet-500/20 text-violet-500 flex items-center justify-center">
-            <MousePointer2 size={24} />
-          </div>
-          <div>
-            <h3 className="text-3xl font-bold">ריחוף ואינטראקציה</h3>
-            <p className="text-muted-foreground">אפקטים מגנטיים, הטיה תלת-ממדית ומיקרו-פידבק.</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <MagneticCard 
-            title="כרטיס מגנטי" 
-            description="האלמנט נמשך לכיוון העכבר בצורה אורגנית." 
-            icon={Zap} 
-            color="bg-amber-500/10 text-amber-500"
+      {/* Filters */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+          <input 
+            type="text"
+            placeholder="חפש מערכת תנועה..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pr-10 pl-4 py-2.5 bg-muted/50 border border-border/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           />
-          <MagneticCard 
-            title="הטיה (Tilt)" 
-            description="תחושת עומק תלת-ממדית בזמן ריחוף." 
-            icon={Move} 
-            color="bg-blue-500/10 text-blue-500"
-          />
-          <div className="flex items-center justify-center p-8 rounded-3xl border border-dashed border-border/50">
-            <PremiumButton variant="ai" size="lg" className="px-12">הקלקת פרימיום</PremiumButton>
-          </div>
         </div>
-      </section>
-
-      {/* 2. Shared Layout Gallery */}
-      <section className="space-y-12">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-500 flex items-center justify-center">
-            <LayoutGrid size={24} />
-          </div>
-          <div>
-            <h3 className="text-3xl font-bold">גלריה ופריסה דינמית</h3>
-            <p className="text-muted-foreground">מעברים חלקים בין מצבים (Shared Layout Transitions).</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {galleryItems.map(item => (
-            <motion.div
-              key={item.id}
-              layoutId={`card-${item.id}`}
-              onClick={() => setSelectedId(item.id)}
-              className="bg-card border border-border/50 rounded-3xl p-8 cursor-pointer hover:shadow-2xl transition-all group"
+        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+          {(['all', 'entrance', 'hover', 'layout', 'continuous', 'feedback'] as const).map(type => (
+            <button
+              key={type}
+              onClick={() => setSelectedType(type)}
+              className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all border ${
+                selectedType === type 
+                ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' 
+                : 'bg-muted/50 text-muted-foreground border-border/50 hover:bg-muted'
+              }`}
             >
-              <motion.div layoutId={`icon-${item.id}`} className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-6", item.color)}>
-                <Layers size={28} />
-              </motion.div>
-              <motion.h4 layoutId={`title-${item.id}`} className="text-xl font-bold mb-2">{item.title}</motion.h4>
-              <motion.p layoutId={`subtitle-${item.id}`} className="text-sm text-muted-foreground">{item.subtitle}</motion.p>
-            </motion.div>
+              {type === 'all' ? 'הכל' : getTypeLabel(type)}
+            </button>
           ))}
         </div>
+      </div>
 
-        <AnimatePresence>
-          {selectedId && (
+      {/* Gallery */}
+      <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4' : 'space-y-3'}>
+        <AnimatePresence mode="popLayout">
+          {filteredSystems.map((system) => (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md"
-              onClick={() => setSelectedId(null)}
+              key={`${system.id}-${refreshKey}`}
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              whileHover={{ y: -4 }}
+              onClick={() => setSelectedSystem(system)}
+              className={`group relative overflow-hidden glass-panel rounded-2xl p-5 cursor-pointer border border-border/50 hover:border-primary/50 transition-all duration-300 ${
+                viewMode === 'list' ? 'flex items-center gap-6 py-4' : ''
+              }`}
             >
-              {galleryItems.filter(item => item.id === selectedId).map(item => (
+              <div className={`w-12 h-12 rounded-xl ${system.color || 'bg-primary'} bg-opacity-10 flex items-center justify-center text-primary mb-4 group-hover:scale-110 transition-transform ${viewMode === 'list' ? 'mb-0 shrink-0' : ''}`}>
+                {getTypeIcon(system.type)}
+              </div>
+              
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="font-bold text-lg">{system.label}</h3>
+                  <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                    {getTypeLabel(system.type)}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground line-clamp-2">{system.description}</p>
+              </div>
+
+              {/* Preview Area */}
+              <div className={`mt-4 h-32 rounded-xl bg-muted/30 border border-border/50 flex items-center justify-center overflow-hidden relative ${viewMode === 'list' ? 'hidden' : ''}`}>
                 <motion.div
-                  key={item.id}
-                  layoutId={`card-${item.id}`}
-                  className="bg-card border border-border rounded-[2.5rem] p-12 w-full max-w-2xl shadow-2xl cursor-default relative"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button 
-                    onClick={() => setSelectedId(null)}
-                    className="absolute top-8 left-8 p-3 rounded-full bg-muted hover:bg-primary hover:text-white transition-all"
-                  >
-                    <Maximize2 size={20} className="rotate-45" />
-                  </button>
-                  
-                  <div className="flex items-center gap-6 mb-8">
-                    <motion.div layoutId={`icon-${item.id}`} className={cn("w-20 h-20 rounded-3xl flex items-center justify-center", item.color)}>
-                      <Layers size={40} />
-                    </motion.div>
-                    <div>
-                      <motion.h4 layoutId={`title-${item.id}`} className="text-3xl font-black">{item.title}</motion.h4>
-                      <motion.p layoutId={`subtitle-${item.id}`} className="text-lg text-muted-foreground">{item.subtitle}</motion.p>
-                    </div>
-                  </div>
-                  
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="space-y-6"
-                  >
-                    <p className="text-muted-foreground leading-relaxed text-lg">
-                      זהו מעבר פריסה משותף (Shared Layout Transition). Framer Motion מחשב את המיקום והגודל של האלמנטים ומבצע אינטרפולציה חלקה ביניהם.
-                    </p>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="h-32 rounded-2xl bg-muted/50 border border-border/50" />
-                      <div className="h-32 rounded-2xl bg-muted/50 border border-border/50" />
-                    </div>
-                  </motion.div>
-                </motion.div>
-              ))}
+                  variants={system.variants}
+                  initial="initial"
+                  animate="animate"
+                  whileHover="hover"
+                  whileTap="tap"
+                  className={`w-12 h-12 rounded-lg ${system.color || 'bg-primary'} shadow-lg`}
+                />
+                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Play size={12} className="text-muted-foreground" />
+                </div>
+              </div>
             </motion.div>
-          )}
+          ))}
         </AnimatePresence>
-      </section>
+      </div>
 
-      {/* 3. Scroll Reveal Sections */}
-      <section className="space-y-12">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
-            <ScrollText size={24} />
-          </div>
-          <div>
-            <h3 className="text-3xl font-bold">אנימציות גלילה</h3>
-            <p className="text-muted-foreground">חשיפה הדרגתית, פאראלקס ומחווני התקדמות.</p>
-          </div>
-        </div>
-
-        <div className="divide-y divide-border/50">
-          <ScrollRevealSection 
-            index={1} 
-            title="חשיפה חכמה" 
-            description="התוכן מופיע רק כשהוא נכנס לטווח הראייה, מה שחוסך משאבים ויוצר חוויה יוקרתית."
-            scrollYProgress={scrollYProgress}
-          />
-          <ScrollRevealSection 
-            index={2} 
-            title="פאראלקס עדין" 
-            description="תמונות ורקעים שזזים במהירות שונה מהטקסט ליצירת תחושת עומק."
-            scrollYProgress={scrollYProgress}
-          />
-        </div>
-      </section>
-
-      {/* 4. Typography & Effects */}
-      <section className="space-y-12">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-primary/20 text-primary flex items-center justify-center">
-            <Type size={24} />
-          </div>
-          <div>
-            <h3 className="text-3xl font-bold">טיפוגרפיה ואפקטים</h3>
-            <p className="text-muted-foreground">טקסט קינטי, Glassmorphism וגראדיאנטים חיים.</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="h-80 rounded-[2.5rem] bg-card/50 backdrop-blur-2xl border border-border/50 flex items-center justify-center p-12 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <motion.h4 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              className="text-4xl font-black text-center leading-tight"
-            >
-              Glassmorphism <br />
-              <span className="text-primary">Premium Depth</span>
-            </motion.h4>
-          </div>
-
-          <div className="h-80 rounded-[2.5rem] bg-black flex items-center justify-center p-12 relative overflow-hidden">
+      {/* Modal / Detail View */}
+      <AnimatePresence>
+        {selectedSystem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md"
+            onClick={() => setSelectedSystem(null)}
+          >
             <motion.div
-              animate={{
-                scale: [1, 1.2, 1],
-                rotate: [0, 180, 360],
-              }}
-              transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-0 bg-gradient-to-tr from-primary to-violet-600 blur-[80px] opacity-30"
-            />
-            <h4 className="text-4xl font-black text-white relative z-10">Dynamic Glow</h4>
-          </div>
-        </div>
-      </section>
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-card border border-border rounded-3xl p-8 w-full max-w-2xl shadow-2xl relative overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Background Decoration */}
+              <div className={`absolute -top-24 -right-24 w-64 h-64 rounded-full ${selectedSystem.color || 'bg-primary'} opacity-5 blur-3xl`} />
+              
+              <div className="flex justify-between items-start mb-8 relative">
+                <div className="flex items-center gap-4">
+                  <div className={`w-16 h-16 rounded-2xl ${selectedSystem.color || 'bg-primary'} bg-opacity-10 flex items-center justify-center text-primary`}>
+                    {getTypeIcon(selectedSystem.type)}
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold">{selectedSystem.label}</h3>
+                    <p className="text-muted-foreground">{selectedSystem.description}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedSystem(null)}
+                  className="p-2 rounded-full bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Maximize2 size={20} className="rotate-45" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Live Preview */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">תצוגה חיה</h4>
+                  <div className="h-64 rounded-2xl bg-muted/30 border border-border/50 flex items-center justify-center relative overflow-hidden group">
+                    <motion.div
+                      key={refreshKey}
+                      variants={selectedSystem.variants}
+                      initial="initial"
+                      animate="animate"
+                      whileHover="hover"
+                      whileTap="tap"
+                      className={`w-24 h-24 rounded-2xl ${selectedSystem.color || 'bg-primary'} shadow-2xl flex items-center justify-center text-white`}
+                    >
+                      <Zap size={32} />
+                    </motion.div>
+                    
+                    <button 
+                      onClick={handleRefresh}
+                      className="absolute bottom-4 right-4 p-2 rounded-lg bg-background/50 backdrop-blur-sm border border-border/50 text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <RefreshCw size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Code Panel */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">קוד מקור</h4>
+                  <div className="h-64 overflow-y-auto rounded-2xl border border-border/50 custom-scrollbar">
+                    <CodePanel 
+                      structureCode={`<motion.div\n  variants={variants}\n  initial="initial"\n  animate="animate"\n  whileHover="hover"\n  whileTap="tap"\n/>`}
+                      motionCode={JSON.stringify(selectedSystem.variants, null, 2)}
+                      styleCode=""
+                    />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
-
