@@ -11,10 +11,12 @@ import {
   Zap,
   ArrowRight,
   Type,
-  Move
+  Move,
+  Code2
 } from 'lucide-react';
 import { cn } from '@/src/utils/cn';
 import { PremiumButton } from '../premium/PremiumButton';
+import { CodePanel } from '../code-preview/CodePanel';
 
 // --- Specialized Animation Components ---
 
@@ -57,10 +59,10 @@ function ScrollRevealSection({ index, title, description, scrollYProgress }: any
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 100 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }}
+      initial={{ opacity: 0, y: 50, scale: 0.95 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: false, amount: 0.3 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
       className={cn(
         "flex flex-col md:flex-row gap-12 items-center py-20 relative",
         index % 2 === 0 && "md:flex-row-reverse"
@@ -70,14 +72,20 @@ function ScrollRevealSection({ index, title, description, scrollYProgress }: any
         <div className="text-7xl font-black text-primary/10">0{index}</div>
         <h3 className="text-4xl font-bold tracking-tighter">{title}</h3>
         <p className="text-lg text-muted-foreground leading-relaxed">{description}</p>
-        <PremiumButton variant="secondary" icon={<ArrowRight size={16} />}>למידה נוספת</PremiumButton>
+        <PremiumButton 
+          variant="secondary" 
+          icon={<ArrowRight size={16} />}
+          onClick={() => alert(`מנווט לפרטים נוספים על: ${title}`)}
+        >
+          למידה נוספת
+        </PremiumButton>
       </div>
       
       <div className="flex-1 w-full aspect-video rounded-[2.5rem] bg-muted/30 border border-border/50 relative overflow-hidden group z-10">
         <motion.div
           style={{ y: yParallax }}
-          whileHover={{ scale: 1.1 }}
-          transition={{ duration: 1.5 }}
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.4 }}
           className="absolute inset-0 bg-gradient-to-br from-primary/20 to-violet-500/20"
         />
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -147,8 +155,98 @@ function LiveBackground({ scrollYProgress }: { scrollYProgress: any }) {
 
 export function AdvancedMotionLab() {
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [showCode, setShowCode] = React.useState(false);
+  const [showGalleryCode, setShowGalleryCode] = React.useState(false);
+  const [showScrollCode, setShowScrollCode] = React.useState(false);
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+
+  const scrollStructureCode = `
+<motion.div
+  initial={{ opacity: 0, y: 100 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: false, amount: 0.3 }}
+  transition={{ duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }}
+  className="flex flex-col md:flex-row gap-12 items-center py-20 relative"
+>
+  {/* ... content ... */}
+</motion.div>
+`;
+
+  const scrollStyleCode = `
+/* Tailwind classes for layout */
+`;
+
+  const scrollMotionCode = `
+viewport={{ once: false, amount: 0.3 }}
+`;
+
+  const structureCode = `
+<div className="relative p-8 rounded-3xl bg-card border border-border/50 shadow-xl cursor-pointer group overflow-hidden">
+  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+  <div className={cn("w-12 h-12 rounded-2xl mb-4 flex items-center justify-center", color)}>
+    <Icon size={24} />
+  </div>
+  <h3 className="text-xl font-bold mb-2">{title}</h3>
+  <p className="text-sm text-muted-foreground">{description}</p>
+</div>
+`;
+
+  const styleCode = `
+/* Tailwind classes are applied directly to the structure */
+`;
+
+  const motionCode = `
+const ref = React.useRef<HTMLDivElement>(null);
+const [position, setPosition] = React.useState({ x: 0, y: 0 });
+
+const handleMouseMove = (e: React.MouseEvent) => {
+  if (!ref.current) return;
+  const { clientX, clientY } = e;
+  const { left, top, width, height } = ref.current.getBoundingClientRect();
+  const x = clientX - (left + width / 2);
+  const y = clientY - (top + height / 2);
+  setPosition({ x: x * 0.2, y: y * 0.2 });
+};
+
+<motion.div
+  ref={ref}
+  onMouseMove={handleMouseMove}
+  onMouseLeave={() => setPosition({ x: 0, y: 0 })}
+  animate={{ x: position.x, y: position.y }}
+  whileHover={{ rotateX: 5, rotateY: 5, scale: 1.02 }}
+  className="relative p-8 rounded-3xl bg-card border border-border/50 shadow-xl cursor-pointer group overflow-hidden"
+>
+  {/* ... */}
+</motion.div>
+`;
+
+  const galleryStructureCode = `
+<motion.div
+  layoutId={\`card-\${item.id}\`}
+  onClick={() => setSelectedId(item.id)}
+  className="bg-card border border-border/50 rounded-3xl p-8 cursor-pointer hover:shadow-2xl transition-all group"
+>
+  <motion.div layoutId={\`icon-\${item.id}\`} className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-6", item.color)}>
+    <Layers size={28} />
+  </motion.div>
+  <motion.h4 layoutId={\`title-\${item.id}\`} className="text-xl font-bold mb-2">{item.title}</motion.h4>
+  <motion.p layoutId={\`subtitle-\${item.id}\`} className="text-sm text-muted-foreground">{item.subtitle}</motion.p>
+</motion.div>
+`;
+
+  const galleryStyleCode = `
+/* Tailwind classes for card styling */
+`;
+
+  const galleryMotionCode = `
+<motion.div
+  layoutId={\`card-\${item.id}\`}
+  onClick={() => setSelectedId(item.id)}
+  // ...
+/>
+// Shared layout transition magic
+`;
 
   const galleryItems = [
     { id: '1', title: 'עיצוב ממשק', subtitle: 'חוויית משתמש', color: 'bg-blue-500/10 text-blue-500' },
@@ -190,15 +288,32 @@ export function AdvancedMotionLab() {
 
       {/* 1. Hover & Interaction Section */}
       <section className="space-y-12">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-violet-500/20 text-violet-500 flex items-center justify-center">
-            <MousePointer2 size={24} />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-violet-500/20 text-violet-500 flex items-center justify-center">
+              <MousePointer2 size={24} />
+            </div>
+            <div>
+              <h3 className="text-3xl font-bold">ריחוף ואינטראקציה</h3>
+              <p className="text-muted-foreground">אפקטים מגנטיים, הטיה תלת-ממדית ומיקרו-פידבק.</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-3xl font-bold">ריחוף ואינטראקציה</h3>
-            <p className="text-muted-foreground">אפקטים מגנטיים, הטיה תלת-ממדית ומיקרו-פידבק.</p>
-          </div>
+          <button 
+            onClick={() => setShowCode(!showCode)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors text-sm font-medium"
+          >
+            <Code2 size={16} />
+            {showCode ? 'הסתר קוד' : 'הצג קוד'}
+          </button>
         </div>
+
+        {showCode && (
+          <CodePanel 
+            structureCode={structureCode}
+            styleCode={styleCode}
+            motionCode={motionCode}
+          />
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <MagneticCard 
@@ -221,15 +336,32 @@ export function AdvancedMotionLab() {
 
       {/* 2. Shared Layout Gallery */}
       <section className="space-y-12">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-500 flex items-center justify-center">
-            <LayoutGrid size={24} />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-500 flex items-center justify-center">
+              <LayoutGrid size={24} />
+            </div>
+            <div>
+              <h3 className="text-3xl font-bold">גלריה ופריסה דינמית</h3>
+              <p className="text-muted-foreground">מעברים חלקים בין מצבים (Shared Layout Transitions).</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-3xl font-bold">גלריה ופריסה דינמית</h3>
-            <p className="text-muted-foreground">מעברים חלקים בין מצבים (Shared Layout Transitions).</p>
-          </div>
+          <button 
+            onClick={() => setShowGalleryCode(!showGalleryCode)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors text-sm font-medium"
+          >
+            <Code2 size={16} />
+            {showGalleryCode ? 'הסתר קוד' : 'הצג קוד'}
+          </button>
         </div>
+
+        {showGalleryCode && (
+          <CodePanel 
+            structureCode={galleryStructureCode}
+            styleCode={galleryStyleCode}
+            motionCode={galleryMotionCode}
+          />
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {galleryItems.map(item => (
@@ -304,15 +436,32 @@ export function AdvancedMotionLab() {
 
       {/* 3. Scroll Reveal Sections */}
       <section className="space-y-12">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
-            <ScrollText size={24} />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
+              <ScrollText size={24} />
+            </div>
+            <div>
+              <h3 className="text-3xl font-bold">אנימציות גלילה</h3>
+              <p className="text-muted-foreground">חשיפה הדרגתית, פאראלקס ומחווני התקדמות.</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-3xl font-bold">אנימציות גלילה</h3>
-            <p className="text-muted-foreground">חשיפה הדרגתית, פאראלקס ומחווני התקדמות.</p>
-          </div>
+          <button 
+            onClick={() => setShowScrollCode(!showScrollCode)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors text-sm font-medium"
+          >
+            <Code2 size={16} />
+            {showScrollCode ? 'הסתר קוד' : 'הצג קוד'}
+          </button>
         </div>
+
+        {showScrollCode && (
+          <CodePanel 
+            structureCode={scrollStructureCode}
+            styleCode={scrollStyleCode}
+            motionCode={scrollMotionCode}
+          />
+        )}
 
         <div className="divide-y divide-border/50">
           <ScrollRevealSection 
