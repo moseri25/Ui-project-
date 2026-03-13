@@ -1,4 +1,3 @@
-import { InteractionLab } from './components/labs/InteractionLab';
 import { StyleMutationEngine } from './components/theme/StyleMutationEngine';
 import { Layout } from './components/layout/Layout';
 import { Hero } from './components/hero/Hero';
@@ -23,10 +22,6 @@ export default function App() {
       <ToastProvider>
         <Layout>
         <div className="space-y-32 pb-32">
-          <section id="interactions" className="scroll-mt-20">
-            <InteractionLab />
-          </section>
-
           <section id="hero" className="scroll-mt-20">
             <Hero />
           </section>
