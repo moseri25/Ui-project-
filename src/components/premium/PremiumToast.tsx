@@ -2,6 +2,7 @@ import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/src/utils/cn';
 import { CheckCircle2, AlertCircle, Info, X, Bell } from 'lucide-react';
+import { useSound } from '@/src/hooks/useSound';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -21,10 +22,17 @@ const ToastContext = React.createContext<ToastContextType | undefined>(undefined
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<Toast[]>([]);
+  const { playSound } = useSound();
 
   const addToast = (title: string, description?: string, type: ToastType = 'info') => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { id, title, description, type }]);
+    
+    // Play sound based on type
+    if (type === 'success') playSound('success');
+    else if (type === 'error') playSound('error');
+    else playSound('pop');
+
     setTimeout(() => removeToast(id), 5000);
   };
 

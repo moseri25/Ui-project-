@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { InteractionStyle } from '../../data/interactionStyles';
+import { useSound } from '@/src/hooks/useSound';
 
 interface InteractionCardProps {
   style: InteractionStyle;
@@ -8,10 +9,13 @@ interface InteractionCardProps {
 
 export const InteractionCard: React.FC<InteractionCardProps> = ({ style }) => {
   const Icon = style.icon;
+  const { playSound } = useSound();
 
   return (
     <motion.div
       className={`glass-panel rounded-2xl p-6 flex flex-col justify-between ${style.tailwindClasses}`}
+      onMouseEnter={() => playSound('hover', 0.2)}
+      onClick={() => playSound('pop')}
       {...style.motionProps}
     >
       <div className="mb-6">

@@ -23,6 +23,7 @@ export function FeedbackLab() {
             <PremiumButton 
               variant="secondary" 
               icon={<CheckCircle2 size={16} />}
+              soundType="success"
               onClick={() => addToast('הפעולה הצליחה', 'הנתונים נשמרו בהצלחה במערכת', 'success')}
             >
               הצלחה
@@ -31,6 +32,7 @@ export function FeedbackLab() {
             <PremiumButton 
               variant="destructive" 
               icon={<AlertCircle size={16} />}
+              soundType="error"
               onClick={() => addToast('שגיאת מערכת', 'לא ניתן היה להתחבר לשרת הנתונים', 'error')}
             >
               שגיאה
@@ -39,6 +41,7 @@ export function FeedbackLab() {
             <PremiumButton 
               variant="secondary" 
               icon={<Info size={16} />}
+              soundType="pop"
               onClick={() => addToast('עדכון חדש', 'גרסה 2.0 זמינה כעת להורדה', 'info')}
             >
               מידע
@@ -47,6 +50,7 @@ export function FeedbackLab() {
             <PremiumButton 
               variant="secondary" 
               icon={<Bell size={16} />}
+              soundType="switch"
               onClick={() => addToast('אזהרת אבטחה', 'זוהתה כניסה ממכשיר לא מוכר', 'warning')}
             >
               אזהרה

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/src/utils/cn';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useSound } from '@/src/hooks/useSound';
 
 interface PremiumInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -15,6 +16,7 @@ interface PremiumInputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   value?: string | number;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 export function PremiumInput({ 
@@ -24,9 +26,23 @@ export function PremiumInput({
   icon, 
   className, 
   id,
+  onFocus,
+  onBlur,
   ...props 
 }: PremiumInputProps) {
   const [isFocused, setIsFocused] = React.useState(false);
+  const { playSound } = useSound();
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    setIsFocused(true);
+    playSound('switch', 0.1);
+    if (onFocus) onFocus(e);
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    setIsFocused(false);
+    if (onBlur) onBlur(e);
+  };
 
   return (
     <div className="w-full space-y-2">
@@ -64,8 +80,8 @@ export function PremiumInput({
               success && "border-green-500/50 focus:border-green-500",
               className
             )}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             {...props}
           />
 

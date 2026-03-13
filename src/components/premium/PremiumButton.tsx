@@ -2,6 +2,7 @@ import * as React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/src/utils/cn';
 import { Loader2, Check, X } from 'lucide-react';
+import { useSound, SoundType } from '@/src/hooks/useSound';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'ai' | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -14,9 +15,10 @@ interface PremiumButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   icon?: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
   type?: 'button' | 'submit' | 'reset';
+  soundType?: SoundType;
 }
 
 export function PremiumButton({ 
@@ -26,8 +28,11 @@ export function PremiumButton({
   className, 
   children, 
   icon,
+  onClick,
+  soundType = 'click',
   ...props 
 }: PremiumButtonProps) {
+  const { playSound } = useSound();
   
   const variants = {
     primary: "bg-foreground text-background hover:opacity-90",
@@ -44,6 +49,11 @@ export function PremiumButton({
     lg: "px-6 py-3 text-base rounded-2xl"
   };
 
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    playSound(soundType);
+    if (onClick) onClick(e);
+  };
+
   return (
     <motion.button
       whileTap={{ scale: state === 'default' ? 0.97 : 1 }}
@@ -55,6 +65,7 @@ export function PremiumButton({
         className
       )}
       disabled={state === 'loading'}
+      onClick={handleClick}
       {...props}
     >
       {state === 'loading' && <Loader2 size={16} className="animate-spin" />}
