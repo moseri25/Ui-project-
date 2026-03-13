@@ -4,8 +4,11 @@ import { CodePanel } from '../code-preview/CodePanel';
 import { PenTool, Heart, Star, Zap, Settings, Shield } from 'lucide-react';
 import { cn } from '@/src/utils/cn';
 
+import { useSound } from '@/src/hooks/useSound';
+
 export function SvgMotionLab() {
   const [activeIcon, setActiveIcon] = useState<string>('heart');
+  const { playSound } = useSound();
 
   const icons = [
     { id: 'heart', icon: Heart, label: 'לייק', color: 'text-rose-500' },
@@ -97,7 +100,11 @@ export function SvgMotionLab() {
                 return (
                   <motion.button
                     key={item.id}
-                    onClick={() => setActiveIcon(item.id)}
+                    onClick={() => {
+                      setActiveIcon(item.id);
+                      playSound('pop');
+                    }}
+                    onMouseEnter={() => playSound('hover')}
                     className={cn(
                       "w-14 h-14 rounded-2xl flex items-center justify-center border transition-colors relative overflow-hidden",
                       isActive ? "bg-card border-border shadow-sm" : "bg-transparent border-transparent hover:bg-muted"

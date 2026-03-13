@@ -6,13 +6,19 @@ import { cn } from '@/src/utils/cn';
 
 type ButtonState = 'default' | 'hover' | 'active' | 'loading' | 'success' | 'error';
 
+import { useSound } from '@/src/hooks/useSound';
+
 export function ComponentStatesLab() {
   const [btnState, setBtnState] = useState<ButtonState>('default');
+  const { playSound } = useSound();
 
   const handleSimulate = () => {
+    playSound('switch');
     setBtnState('loading');
     setTimeout(() => {
-      setBtnState(Math.random() > 0.5 ? 'success' : 'error');
+      const isSuccess = Math.random() > 0.5;
+      setBtnState(isSuccess ? 'success' : 'error');
+      playSound(isSuccess ? 'success' : 'error');
       setTimeout(() => setBtnState('default'), 2000);
     }, 1500);
   };
@@ -44,7 +50,10 @@ export function ComponentStatesLab() {
             {(['default', 'loading', 'success', 'error'] as ButtonState[]).map(s => (
               <button
                 key={s}
-                onClick={() => setBtnState(s)}
+                onClick={() => {
+                  setBtnState(s);
+                  playSound('switch');
+                }}
                 className={cn(
                   "px-3 py-1 text-xs rounded-full border transition-colors",
                   btnState === s ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:bg-muted"

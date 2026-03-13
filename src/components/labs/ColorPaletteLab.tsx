@@ -4,9 +4,12 @@ import { CodePanel } from '../code-preview/CodePanel';
 import { Palette, Droplet, Check } from 'lucide-react';
 import { cn } from '@/src/utils/cn';
 
+import { useSound } from '@/src/hooks/useSound';
+
 export function ColorPaletteLab() {
   const [activePalette, setActivePalette] = useState('ocean');
   const [copiedColor, setCopiedColor] = useState<string | null>(null);
+  const { playSound } = useSound();
 
   const palettes = {
     ocean: [
@@ -32,6 +35,7 @@ export function ColorPaletteLab() {
   const handleCopy = (hex: string) => {
     navigator.clipboard.writeText(hex);
     setCopiedColor(hex);
+    playSound('success');
     setTimeout(() => setCopiedColor(null), 1500);
   };
 
@@ -65,7 +69,10 @@ export function ColorPaletteLab() {
               {Object.keys(palettes).map((key) => (
                 <button
                   key={key}
-                  onClick={() => setActivePalette(key)}
+                  onClick={() => {
+                    setActivePalette(key);
+                    playSound('switch');
+                  }}
                   className={cn(
                     "px-4 py-2 rounded-lg text-sm font-medium transition-colors relative",
                     activePalette === key ? "text-foreground" : "text-muted-foreground hover:text-foreground"

@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/src/utils/cn';
 
+import { useSound } from '@/src/hooks/useSound';
+
 interface PremiumCardProps {
   title: string;
   description: string;
@@ -12,9 +14,11 @@ interface PremiumCardProps {
 }
 
 export function PremiumCard({ title, description, icon, children, className, variant = 'glass' }: PremiumCardProps) {
+  const { playSound } = useSound();
   return (
     <motion.div 
       whileHover={{ y: -5 }}
+      onMouseEnter={() => playSound('hover')}
       className={cn(
         "relative rounded-3xl overflow-hidden border border-border/50 p-6 transition-all duration-300",
         variant === 'glass' && "bg-card/20 backdrop-blur-2xl",

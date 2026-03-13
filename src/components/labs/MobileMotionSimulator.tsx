@@ -4,9 +4,12 @@ import { CodePanel } from '../code-preview/CodePanel';
 import { Smartphone, Menu, X, ChevronRight, Search, Bell, Home, User, Settings } from 'lucide-react';
 import { cn } from '@/src/utils/cn';
 
+import { useSound } from '@/src/hooks/useSound';
+
 export function MobileMotionSimulator() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
+  const { playSound } = useSound();
 
   const tabs = [
     { id: 'home', icon: Home, label: 'ראשי' },
@@ -50,7 +53,10 @@ export function MobileMotionSimulator() {
                 {/* Header */}
                 <header className="h-14 flex items-center justify-between px-4 border-b border-border/50 bg-card/80 backdrop-blur-md z-20 relative">
                   <button 
-                    onClick={() => setIsMenuOpen(true)}
+                    onClick={() => {
+                      setIsMenuOpen(true);
+                      playSound('switch');
+                    }}
                     className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors"
                   >
                     <Menu size={20} />
@@ -104,7 +110,10 @@ export function MobileMotionSimulator() {
                     return (
                       <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
+                        onClick={() => {
+                          setActiveTab(tab.id);
+                          playSound('switch');
+                        }}
                         className="flex flex-col items-center justify-center w-16 h-full relative"
                       >
                         {isActive && (
@@ -153,7 +162,10 @@ export function MobileMotionSimulator() {
                         <div className="p-6 border-b border-border/50 flex items-center justify-between">
                           <span className="font-bold text-lg">תפריט</span>
                           <button 
-                            onClick={() => setIsMenuOpen(false)}
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              playSound('switch');
+                            }}
                             className="p-2 rounded-full hover:bg-muted transition-colors"
                           >
                             <X size={20} />
@@ -166,6 +178,8 @@ export function MobileMotionSimulator() {
                               initial={{ opacity: 0, x: 20 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: 0.1 + i * 0.05 }}
+                              onClick={() => playSound('pop')}
+                              onMouseEnter={() => playSound('hover')}
                               className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-muted transition-colors text-right"
                             >
                               <span className="font-medium">{item}</span>

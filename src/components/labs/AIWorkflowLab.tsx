@@ -16,8 +16,8 @@ export function AIWorkflowLab() {
       <h2 className="text-3xl font-bold tracking-tight">ממשקי AI Workflow</h2>
       
       <div className="flex gap-4">
-        <PremiumButton onClick={runWorkflow} disabled={state !== 'idle'}>הפעל תהליך</PremiumButton>
-        <PremiumButton variant="secondary" onClick={() => setState('idle')}>איפוס</PremiumButton>
+        <PremiumButton onClick={runWorkflow} disabled={state !== 'idle'} soundType="switch">הפעל תהליך</PremiumButton>
+        <PremiumButton variant="secondary" onClick={() => setState('idle')} soundType="pop">איפוס</PremiumButton>
       </div>
 
       <PremiumAIWorkflow 

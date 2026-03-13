@@ -297,10 +297,15 @@ const generateStyles = (): MotionStyle[] => {
 // --- Components ---
 
 function StyleCard({ style, onClick }: { style: MotionStyle; onClick: () => void; key?: string }) {
+  const { playSound } = useSound();
   return (
     <motion.div
       layoutId={`card-${style.id}`}
-      onClick={onClick}
+      onClick={() => {
+        onClick();
+        playSound('pop');
+      }}
+      onMouseEnter={() => playSound('hover')}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -349,12 +354,15 @@ function StyleCard({ style, onClick }: { style: MotionStyle; onClick: () => void
   );
 }
 
+import { useSound } from '@/src/hooks/useSound';
+
 export function StyleCatalogLab() {
   const [activeCategory, setActiveCategory] = React.useState<StyleCategory | 'All'>('All');
   const [selectedStyle, setSelectedStyle] = React.useState<MotionStyle | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [isGridView, setIsGridView] = React.useState(true);
   const [mutationSeed, setMutationSeed] = React.useState(0);
+  const { playSound } = useSound();
 
   const allStyles = React.useMemo(() => {
     const baseStyles = generateStyles();
@@ -403,13 +411,19 @@ export function StyleCatalogLab() {
 
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => setIsGridView(!isGridView)}
+            onClick={() => {
+              setIsGridView(!isGridView);
+              playSound('switch');
+            }}
             className="p-3 rounded-xl bg-muted hover:bg-primary hover:text-white transition-all"
           >
             {isGridView ? <Layout size={20} /> : <Layers size={20} />}
           </button>
           <button 
-            onClick={() => setMutationSeed(prev => prev + 1)}
+            onClick={() => {
+              setMutationSeed(prev => prev + 1);
+              playSound('switch');
+            }}
             className="p-3 rounded-xl bg-muted hover:bg-primary hover:text-white transition-all group"
             title="Mutate Styles"
           >
@@ -420,6 +434,7 @@ export function StyleCatalogLab() {
               setActiveCategory('All');
               setSearchQuery('');
               setMutationSeed(0);
+              playSound('switch');
             }}
             className="p-3 rounded-xl bg-muted hover:bg-primary hover:text-white transition-all"
             title="Reset"
@@ -433,7 +448,10 @@ export function StyleCatalogLab() {
       <div className="sticky top-20 z-30 bg-background/80 backdrop-blur-xl p-4 rounded-3xl border border-border/50 shadow-sm space-y-4">
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => setActiveCategory('All')}
+            onClick={() => {
+              setActiveCategory('All');
+              playSound('switch');
+            }}
             className={cn(
               "px-4 py-2 rounded-xl text-sm font-medium transition-all",
               activeCategory === 'All' ? "bg-primary text-white" : "bg-muted hover:bg-muted/80"
@@ -444,7 +462,10 @@ export function StyleCatalogLab() {
           {CATEGORIES.map(cat => (
             <button
               key={cat}
-              onClick={() => setActiveCategory(cat)}
+              onClick={() => {
+                setActiveCategory(cat);
+                playSound('switch');
+              }}
               className={cn(
                 "px-4 py-2 rounded-xl text-sm font-medium transition-all",
                 activeCategory === cat ? "bg-primary text-white" : "bg-muted hover:bg-muted/80"
@@ -596,7 +617,10 @@ export function StyleCatalogLab() {
                 </div>
 
                 <button 
-                  onClick={() => setSelectedStyle(null)}
+                  onClick={() => {
+                    setSelectedStyle(null);
+                    playSound('switch');
+                  }}
                   className="w-full py-4 rounded-2xl bg-primary text-white font-bold hover:opacity-90 transition-all flex items-center justify-center gap-2"
                 >
                   <Minimize2 size={18} />

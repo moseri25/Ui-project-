@@ -12,10 +12,10 @@ export function ComponentShowcaseLab() {
       <section className="space-y-6">
         <h3 className="text-xl font-semibold">מערכת כפתורים (Premium Buttons)</h3>
         <div className="flex flex-wrap gap-4">
-          <PremiumButton variant="primary">Primary</PremiumButton>
-          <PremiumButton variant="secondary">Secondary</PremiumButton>
-          <PremiumButton variant="ai" icon={<Sparkles size={16} />}>AI Action</PremiumButton>
-          <PremiumButton variant="destructive" state="destructive">Destructive</PremiumButton>
+          <PremiumButton variant="primary" soundType="pop">Primary</PremiumButton>
+          <PremiumButton variant="secondary" soundType="switch">Secondary</PremiumButton>
+          <PremiumButton variant="ai" icon={<Sparkles size={16} />} soundType="success">AI Action</PremiumButton>
+          <PremiumButton variant="destructive" state="destructive" soundType="error">Destructive</PremiumButton>
         </div>
         <CodePanel 
           structureCode={`<PremiumButton variant="ai" icon={<Sparkles />}>AI Action</PremiumButton>`}

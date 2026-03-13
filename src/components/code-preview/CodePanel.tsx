@@ -12,14 +12,18 @@ interface CodePanelProps {
 
 type Tab = 'structure' | 'style' | 'motion';
 
+import { useSound } from '@/src/hooks/useSound';
+
 export function CodePanel({ structureCode, styleCode, motionCode, className }: CodePanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>('motion');
   const [copied, setCopied] = useState(false);
+  const { playSound } = useSound();
 
   const handleCopy = () => {
     const textToCopy = activeTab === 'structure' ? structureCode : activeTab === 'style' ? styleCode : motionCode;
     navigator.clipboard.writeText(textToCopy);
     setCopied(true);
+    playSound('success');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -38,7 +42,10 @@ export function CodePanel({ structureCode, styleCode, motionCode, className }: C
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  playSound('switch');
+                }}
                 className={cn(
                   "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                   activeTab === tab.id 

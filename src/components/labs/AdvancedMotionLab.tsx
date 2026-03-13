@@ -19,12 +19,15 @@ import { PremiumButton } from '../premium/PremiumButton';
 import { CodePanel } from '../code-preview/CodePanel';
 import { useToast } from '../premium/PremiumToast';
 
+import { useSound } from '@/src/hooks/useSound';
+
 // --- Specialized Animation Components ---
 
 // 1. Hover: Magnetic & Tilt
 function MagneticCard({ children, title, description, icon: Icon, color }: any) {
   const ref = React.useRef<HTMLDivElement>(null);
   const [position, setPosition] = React.useState({ x: 0, y: 0 });
+  const { playSound } = useSound();
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!ref.current) return;
@@ -39,7 +42,9 @@ function MagneticCard({ children, title, description, icon: Icon, color }: any) 
     <motion.div
       ref={ref}
       onMouseMove={handleMouseMove}
+      onMouseEnter={() => playSound('hover')}
       onMouseLeave={() => setPosition({ x: 0, y: 0 })}
+      onClick={() => playSound('pop')}
       animate={{ x: position.x, y: position.y }}
       whileHover={{ rotateX: 5, rotateY: 5, scale: 1.02 }}
       className="relative p-8 rounded-3xl bg-card border border-border/50 shadow-xl cursor-pointer group overflow-hidden"
@@ -162,6 +167,7 @@ export function AdvancedMotionLab() {
   const [showScrollCode, setShowScrollCode] = React.useState(false);
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+  const { playSound } = useSound();
 
   const scrollStructureCode = `
 <motion.div
@@ -301,7 +307,10 @@ const handleMouseMove = (e: React.MouseEvent) => {
             </div>
           </div>
           <button 
-            onClick={() => setShowCode(!showCode)}
+            onClick={() => {
+              setShowCode(!showCode);
+              playSound('switch');
+            }}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors text-sm font-medium"
           >
             <Code2 size={16} />
@@ -349,7 +358,10 @@ const handleMouseMove = (e: React.MouseEvent) => {
             </div>
           </div>
           <button 
-            onClick={() => setShowGalleryCode(!showGalleryCode)}
+            onClick={() => {
+              setShowGalleryCode(!showGalleryCode);
+              playSound('switch');
+            }}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors text-sm font-medium"
           >
             <Code2 size={16} />
@@ -370,7 +382,11 @@ const handleMouseMove = (e: React.MouseEvent) => {
             <motion.div
               key={item.id}
               layoutId={`card-${item.id}`}
-              onClick={() => setSelectedId(item.id)}
+              onClick={() => {
+                setSelectedId(item.id);
+                playSound('pop');
+              }}
+              onMouseEnter={() => playSound('hover')}
               className="bg-card border border-border/50 rounded-3xl p-8 cursor-pointer hover:shadow-2xl transition-all group"
             >
               <motion.div layoutId={`icon-${item.id}`} className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-6", item.color)}>
@@ -449,7 +465,10 @@ const handleMouseMove = (e: React.MouseEvent) => {
             </div>
           </div>
           <button 
-            onClick={() => setShowScrollCode(!showScrollCode)}
+            onClick={() => {
+              setShowScrollCode(!showScrollCode);
+              playSound('switch');
+            }}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors text-sm font-medium"
           >
             <Code2 size={16} />
