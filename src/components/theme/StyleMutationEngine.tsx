@@ -22,7 +22,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function StyleMutationEngine({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<ThemeMode>('saas-modern');
+  const [theme, setTheme] = useState<ThemeMode>('ai-futuristic');
 
   useEffect(() => {
     const root = document.documentElement;
